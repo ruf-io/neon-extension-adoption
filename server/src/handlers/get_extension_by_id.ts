@@ -5,17 +5,14 @@ import { extensionsTable, monthlyInstallsTable } from '../db/schema';
 import { eq } from 'drizzle-orm';
 
 export async function getExtensionById(input: GetExtensionByIdInput): Promise<ExtensionWithInstalls | null> {
-    // This is a placeholder implementation! Real code should be implemented here.
-    // The goal of this handler is fetching a specific extension by ID with all its monthly install data
-    // for detailed view and social media sharing deeplinks.
-    
     try {
         // Get extension with monthly install data
         const extensionWithInstalls = await db
             .select()
             .from(extensionsTable)
             .leftJoin(monthlyInstallsTable, eq(extensionsTable.id, monthlyInstallsTable.extension_id))
-            .where(eq(extensionsTable.id, input.id));
+            .where(eq(extensionsTable.id, input.id))
+            .execute();
         
         if (extensionWithInstalls.length === 0) {
             return null;
@@ -52,6 +49,6 @@ export async function getExtensionById(input: GetExtensionByIdInput): Promise<Ex
         };
     } catch (error) {
         console.error('Error fetching extension by ID:', error);
-        return null;
+        throw error;
     }
 }

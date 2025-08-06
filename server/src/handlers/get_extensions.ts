@@ -2,20 +2,17 @@
 import { type ExtensionWithInstalls } from '../schema';
 import { db } from '../db';
 import { extensionsTable, monthlyInstallsTable } from '../db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 export async function getExtensions(): Promise<ExtensionWithInstalls[]> {
-    // This is a placeholder implementation! Real code should be implemented here.
-    // The goal of this handler is fetching all extensions with their monthly install data,
-    // calculating last month installs and total installs for the visualization dashboard.
-    
     try {
         // Get all extensions with their monthly install data
         const extensionsWithInstalls = await db
             .select()
             .from(extensionsTable)
             .leftJoin(monthlyInstallsTable, eq(extensionsTable.id, monthlyInstallsTable.extension_id))
-            .orderBy(extensionsTable.name);
+            .orderBy(extensionsTable.name)
+            .execute();
 
         // Group and process the data to match ExtensionWithInstalls schema
         const extensionsMap = new Map<number, ExtensionWithInstalls>();
@@ -52,7 +49,7 @@ export async function getExtensions(): Promise<ExtensionWithInstalls[]> {
         
         // Calculate last month installs and sort monthly data
         const result = Array.from(extensionsMap.values()).map(extension => {
-            // Sort monthly installs by year and month
+            // Sort monthly installs by year and month (chronological order)
             extension.monthly_installs.sort((a, b) => {
                 if (a.year !== b.year) return a.year - b.year;
                 return a.month - b.month;
@@ -69,6 +66,6 @@ export async function getExtensions(): Promise<ExtensionWithInstalls[]> {
         return result;
     } catch (error) {
         console.error('Error fetching extensions:', error);
-        return [];
+        throw error;
     }
 }
